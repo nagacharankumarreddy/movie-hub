@@ -2,8 +2,8 @@ import React from "react";
 
 const DateFilters = ({ selectedFilter, setSelectedFilter }) => {
   const filters = [
-    "this-week",
     "last-week",
+    "this-week",
     "upcoming-week",
     "upcoming-month",
     "all",

@@ -7,6 +7,7 @@ import SearchBox from "./SearchBox";
 import "./App.css";
 import { format } from "date-fns";
 import { TMDB_API_KEY } from "./constants";
+import Loader from "./Loader";
 
 const App = () => {
   const [filteredMovies, setFilteredMovies] = useState([]);
@@ -19,6 +20,7 @@ const App = () => {
   ]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(window.innerWidth >= 768);
+  const [loading, setLoading] = useState(false);
 
   const getDateRange = (filter) => {
     const today = new Date();
@@ -46,8 +48,11 @@ const App = () => {
 
   useEffect(() => {
     const fetchMovies = async () => {
+      setLoading(true);
       try {
         const apiKey = TMDB_API_KEY;
+        const { startDate } = getDateRange("last-week");
+
         const response = await axios.get(
           "https://api.themoviedb.org/3/discover/movie",
           {
@@ -56,6 +61,7 @@ const App = () => {
               language: "en-US",
               sort_by: "release_date.desc",
               with_original_language: selectedLanguage,
+              "primary_release_date.gte": format(startDate, "yyyy-MM-dd"),
               page: 1,
             },
           }
@@ -98,6 +104,8 @@ const App = () => {
         setFilteredMovies(sortedMovies);
       } catch (error) {
         console.error("Error fetching movies:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -109,6 +117,7 @@ const App = () => {
   useEffect(() => {
     if (selectedFilter !== "all") {
       const fetchFilteredMovies = async () => {
+        setLoading(true);
         try {
           const apiKey = TMDB_API_KEY;
           const { startDate, endDate } = getDateRange(selectedFilter);
@@ -164,6 +173,8 @@ const App = () => {
           setFilteredMovies(sortedMovies);
         } catch (error) {
           console.error("Error fetching filtered movies:", error);
+        } finally {
+          setLoading(false);
         }
       };
 
@@ -174,6 +185,7 @@ const App = () => {
   useEffect(() => {
     if (searchQuery) {
       const searchMovies = async () => {
+        setLoading(true);
         try {
           const apiKey = TMDB_API_KEY;
           const response = await axios.get(
@@ -225,6 +237,8 @@ const App = () => {
           setFilteredMovies(sortedMovies);
         } catch (error) {
           console.error("Error searching movies:", error);
+        } finally {
+          setLoading(false);
         }
       };
 
@@ -262,7 +276,7 @@ const App = () => {
           </div>
         </div>
       </div>
-      <MovieList movies={filteredMovies} />
+      {loading ? <Loader /> : <MovieList movies={filteredMovies} />}
     </div>
   );
 };
