@@ -8,6 +8,7 @@ import "./App.css";
 import { format } from "date-fns";
 import { TMDB_API_KEY } from "./constants";
 import Loader from "./Loader";
+import useDebounce from "./useDebounce";
 
 const App = () => {
   const [filteredMovies, setFilteredMovies] = useState([]);
@@ -21,6 +22,9 @@ const App = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(window.innerWidth >= 768);
   const [loading, setLoading] = useState(false);
+
+  console.log(selectedLanguage, selectedLanguage);
+  const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const getDateRange = (filter) => {
     const today = new Date();
@@ -183,7 +187,7 @@ const App = () => {
   }, [selectedLanguage, selectedFilter]);
 
   useEffect(() => {
-    if (searchQuery) {
+    if (debouncedSearchQuery) {
       const searchMovies = async () => {
         setLoading(true);
         try {
@@ -194,7 +198,7 @@ const App = () => {
               params: {
                 api_key: apiKey,
                 language: "en-US",
-                query: searchQuery,
+                query: debouncedSearchQuery,
                 page: 1,
               },
             }
@@ -243,8 +247,11 @@ const App = () => {
       };
 
       searchMovies();
+    } else {
+      setSelectedFilter("all");
+      setSelectedLanguage("te");
     }
-  }, [searchQuery]);
+  }, [debouncedSearchQuery]);
 
   const handleLanguageClick = (code) => {
     setSelectedLanguage(code);
