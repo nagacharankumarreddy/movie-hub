@@ -9,7 +9,6 @@ import { format } from "date-fns";
 import { TMDB_API_KEY } from "./constants";
 
 const App = () => {
-  const [movies, setMovies] = useState([]);
   const [filteredMovies, setFilteredMovies] = useState([]);
   const [selectedLanguage, setSelectedLanguage] = useState("te");
   const [selectedFilter, setSelectedFilter] = useState("all");
@@ -96,7 +95,6 @@ const App = () => {
         const sortedMovies = detailedMovies.sort(
           (a, b) => new Date(b.release_date) - new Date(a.release_date)
         );
-        setMovies(sortedMovies);
         setFilteredMovies(sortedMovies);
       } catch (error) {
         console.error("Error fetching movies:", error);
