@@ -261,7 +261,12 @@ const App = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="bg-gray-800 text-white p-6 rounded-lg shadow-md mb-8">
-        <h1 className="text-4xl font-bold text-center mb-4">Upcoming Movies</h1>
+        <h1 className="text-4xl font-bold text-center mb-4 hidden md:block">
+          What's New in Movies? 🎬🍿
+        </h1>
+        <h1 className="text-2xl font-bold text-center mb-4 md:hidden">
+          Movie Hub🍿
+        </h1>
         <SearchBox searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between">
           <div className="flex flex-wrap gap-2">
