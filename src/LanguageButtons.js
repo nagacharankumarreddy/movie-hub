@@ -3,19 +3,21 @@ import React from "react";
 const LanguageButtons = ({
   languageOptions,
   selectedLanguage,
-  setSelectedLanguage,
+  handleLanguageClick,
 }) => {
   return (
-    <div className="flex space-x-2">
-      {languageOptions.map((option) => (
+    <div className="flex gap-2">
+      {languageOptions.map((language) => (
         <button
-          key={option.code}
-          onClick={() => setSelectedLanguage(option.code)}
-          className={`px-4 py-2 rounded-lg text-white font-bold transition transform hover:scale-105 ${
-            selectedLanguage === option.code ? "bg-blue-600" : "bg-blue-400"
-          }`}
+          key={language.code}
+          className={`px-4 py-2 my-1 rounded-lg ${
+            selectedLanguage === language.code
+              ? "bg-blue-500 text-white"
+              : "bg-gray-300 text-gray-700"
+          } hover:bg-blue-600`}
+          onClick={() => handleLanguageClick(language.code)}
         >
-          {option.name}
+          {language.name}
         </button>
       ))}
     </div>

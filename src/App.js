@@ -3,6 +3,7 @@ import axios from "axios";
 import MovieList from "./MovieList";
 import LanguageButtons from "./LanguageButtons";
 import DateFilters from "./DateFilters";
+import SearchBox from "./SearchBox";
 import "./App.css";
 import { format } from "date-fns";
 import { TMDB_API_KEY } from "./constants";
@@ -10,13 +11,15 @@ import { TMDB_API_KEY } from "./constants";
 const App = () => {
   const [movies, setMovies] = useState([]);
   const [filteredMovies, setFilteredMovies] = useState([]);
-  const [selectedLanguage, setSelectedLanguage] = useState("te"); // Default to Telugu
-  const [selectedFilter, setSelectedFilter] = useState("this-week"); // Default to This Week
+  const [selectedLanguage, setSelectedLanguage] = useState("te");
+  const [selectedFilter, setSelectedFilter] = useState("all");
   const [languageOptions] = useState([
     { code: "te", name: "Telugu" },
     { code: "en", name: "English" },
     { code: "hi", name: "Hindi" },
   ]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(window.innerWidth >= 768);
 
   const getDateRange = (filter) => {
     const today = new Date();
@@ -36,8 +39,7 @@ const App = () => {
       startDate = new Date(today.getFullYear(), today.getMonth() + 1, 1);
       endDate = new Date(today.getFullYear(), today.getMonth() + 2, 0);
     } else {
-      startDate = new Date(today.getFullYear(), 0, 1);
-      endDate = new Date(today.getFullYear(), 11, 31);
+      return null;
     }
 
     return { startDate, endDate };
@@ -46,24 +48,20 @@ const App = () => {
   useEffect(() => {
     const fetchMovies = async () => {
       try {
-        const apiKey = "YOUR_TMDB_API_KEY";
-        const { startDate, endDate } = getDateRange(selectedFilter);
+        const apiKey = TMDB_API_KEY;
         const response = await axios.get(
           "https://api.themoviedb.org/3/discover/movie",
           {
             params: {
-              api_key: TMDB_API_KEY,
+              api_key: apiKey,
               language: "en-US",
               sort_by: "release_date.desc",
               with_original_language: selectedLanguage,
-              "primary_release_date.gte": format(startDate, "yyyy-MM-dd"),
-              "primary_release_date.lte": format(endDate, "yyyy-MM-dd"),
               page: 1,
             },
           }
         );
 
-        // Fetch detailed information for each movie
         const detailedMovies = await Promise.all(
           response.data.results.map(async (movie) => {
             try {
@@ -71,7 +69,7 @@ const App = () => {
                 `https://api.themoviedb.org/3/movie/${movie.id}`,
                 {
                   params: {
-                    api_key: TMDB_API_KEY,
+                    api_key: apiKey,
                     language: "en-US",
                   },
                 }
@@ -80,7 +78,7 @@ const App = () => {
                 `https://api.themoviedb.org/3/movie/${movie.id}/credits`,
                 {
                   params: {
-                    api_key: TMDB_API_KEY,
+                    api_key: apiKey,
                   },
                 }
               );
@@ -105,28 +103,165 @@ const App = () => {
       }
     };
 
-    fetchMovies();
+    if (selectedFilter === "all") {
+      fetchMovies();
+    }
   }, [selectedLanguage, selectedFilter]);
 
   useEffect(() => {
-    // Reset filter to "This Week" when language changes
-    setSelectedFilter("this-week");
-  }, [selectedLanguage]);
+    if (selectedFilter !== "all") {
+      const fetchFilteredMovies = async () => {
+        try {
+          const apiKey = TMDB_API_KEY;
+          const { startDate, endDate } = getDateRange(selectedFilter);
+          const response = await axios.get(
+            "https://api.themoviedb.org/3/discover/movie",
+            {
+              params: {
+                api_key: apiKey,
+                language: "en-US",
+                sort_by: "release_date.desc",
+                with_original_language: selectedLanguage,
+                "primary_release_date.gte": format(startDate, "yyyy-MM-dd"),
+                "primary_release_date.lte": format(endDate, "yyyy-MM-dd"),
+                page: 1,
+              },
+            }
+          );
+
+          const detailedMovies = await Promise.all(
+            response.data.results.map(async (movie) => {
+              try {
+                const details = await axios.get(
+                  `https://api.themoviedb.org/3/movie/${movie.id}`,
+                  {
+                    params: {
+                      api_key: apiKey,
+                      language: "en-US",
+                    },
+                  }
+                );
+                const credits = await axios.get(
+                  `https://api.themoviedb.org/3/movie/${movie.id}/credits`,
+                  {
+                    params: {
+                      api_key: apiKey,
+                    },
+                  }
+                );
+                return { ...details.data, credits: credits.data };
+              } catch (error) {
+                console.error(
+                  `Error fetching details for movie ${movie.id}:`,
+                  error
+                );
+                return movie;
+              }
+            })
+          );
+
+          const sortedMovies = detailedMovies.sort(
+            (a, b) => new Date(b.release_date) - new Date(a.release_date)
+          );
+          setFilteredMovies(sortedMovies);
+        } catch (error) {
+          console.error("Error fetching filtered movies:", error);
+        }
+      };
+
+      fetchFilteredMovies();
+    }
+  }, [selectedLanguage, selectedFilter]);
+
+  useEffect(() => {
+    if (searchQuery) {
+      const searchMovies = async () => {
+        try {
+          const apiKey = TMDB_API_KEY;
+          const response = await axios.get(
+            "https://api.themoviedb.org/3/search/movie",
+            {
+              params: {
+                api_key: apiKey,
+                language: "en-US",
+                query: searchQuery,
+                page: 1,
+              },
+            }
+          );
+
+          const detailedMovies = await Promise.all(
+            response.data.results.map(async (movie) => {
+              try {
+                const details = await axios.get(
+                  `https://api.themoviedb.org/3/movie/${movie.id}`,
+                  {
+                    params: {
+                      api_key: apiKey,
+                      language: "en-US",
+                    },
+                  }
+                );
+                const credits = await axios.get(
+                  `https://api.themoviedb.org/3/movie/${movie.id}/credits`,
+                  {
+                    params: {
+                      api_key: apiKey,
+                    },
+                  }
+                );
+                return { ...details.data, credits: credits.data };
+              } catch (error) {
+                console.error(
+                  `Error fetching details for movie ${movie.id}:`,
+                  error
+                );
+                return movie;
+              }
+            })
+          );
+
+          const sortedMovies = detailedMovies.sort(
+            (a, b) => new Date(b.release_date) - new Date(a.release_date)
+          );
+          setFilteredMovies(sortedMovies);
+        } catch (error) {
+          console.error("Error searching movies:", error);
+        }
+      };
+
+      searchMovies();
+    }
+  }, [searchQuery]);
+
+  const handleLanguageClick = (code) => {
+    setSelectedLanguage(code);
+    setShowFilters(true);
+  };
 
   return (
     <div className="container mx-auto p-4">
       <div className="bg-gray-800 text-white p-6 rounded-lg shadow-md mb-8">
         <h1 className="text-4xl font-bold text-center mb-4">Upcoming Movies</h1>
-        <div className="flex flex-col md:flex-row justify-between items-center mb-4">
-          <LanguageButtons
-            languageOptions={languageOptions}
-            selectedLanguage={selectedLanguage}
-            setSelectedLanguage={setSelectedLanguage}
-          />
-          <DateFilters
-            selectedFilter={selectedFilter}
-            setSelectedFilter={setSelectedFilter}
-          />
+        <SearchBox searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <div className="flex flex-col md:flex-row items-start md:items-center md:justify-between">
+          <div className="flex flex-wrap gap-2">
+            <LanguageButtons
+              languageOptions={languageOptions}
+              selectedLanguage={selectedLanguage}
+              handleLanguageClick={handleLanguageClick}
+            />
+          </div>
+          <div
+            className={`flex flex-wrap gap-2 mt-4 md:mt-0 ${
+              !showFilters ? "hidden" : ""
+            }`}
+          >
+            <DateFilters
+              selectedFilter={selectedFilter}
+              setSelectedFilter={setSelectedFilter}
+            />
+          </div>
         </div>
       </div>
       <MovieList movies={filteredMovies} />

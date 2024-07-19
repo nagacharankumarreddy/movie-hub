@@ -2,25 +2,24 @@ import React from "react";
 
 const DateFilters = ({ selectedFilter, setSelectedFilter }) => {
   const filters = [
-    { code: "last-week", label: "Last Week" },
-    { code: "this-week", label: "This Week" },
-    { code: "upcoming-week", label: "Upcoming Week" },
-    { code: "upcoming-month", label: "Upcoming Month" },
+    "this-week",
+    "last-week",
+    "upcoming-week",
+    "upcoming-month",
+    "all",
   ];
 
   return (
-    <div className="flex justify-center mb-4">
+    <div className="flex flex-wrap justify-start gap-2">
       {filters.map((filter) => (
         <button
-          key={filter.code}
-          className={`px-4 py-2 mx-2 rounded-lg text-white ${
-            selectedFilter === filter.code
-              ? "bg-green-500 border-2 border-green-700"
-              : "bg-gray-600 hover:bg-gray-700"
-          } transition duration-300 ease-in-out`}
-          onClick={() => setSelectedFilter(filter.code)}
+          key={filter}
+          className={`px-4 py-2 rounded-lg text-white ${
+            selectedFilter === filter ? "bg-blue-500" : "bg-gray-700"
+          } hover:bg-blue-400`}
+          onClick={() => setSelectedFilter(filter)}
         >
-          {filter.label}
+          {filter === "all" ? "All" : filter.replace(/-/g, " ").toUpperCase()}
         </button>
       ))}
     </div>
