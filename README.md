@@ -21,7 +21,7 @@
 ### Steps
 
 1. **Clone the Repository**
-   git clone https://github.com/your-username/movie-hub.git
+   git clone https://github.com/nagacharankumarreddy/movie-hub.git
    cd movie-hub
 Install Dependencies
 
