@@ -1,29 +1,28 @@
 import React from "react";
 
-const DateFilters = ({ selectedFilter, setSelectedFilter }) => {
-  const filters = [
-    "last-week",
-    "this-week",
-    "upcoming-week",
-    "upcoming-month",
-    "all",
-  ];
+const FILTERS = [
+  { id: "all", label: "All" },
+  { id: "last-week", label: "Last week" },
+  { id: "this-week", label: "This week" },
+  { id: "upcoming-week", label: "Next week" },
+  { id: "upcoming-month", label: "Next month" },
+];
 
-  return (
-    <div className="flex flex-wrap justify-start gap-2">
-      {filters.map((filter) => (
-        <button
-          key={filter}
-          className={`px-4 py-2 rounded-lg text-white ${
-            selectedFilter === filter ? "bg-blue-500" : "bg-gray-700"
-          } hover:bg-blue-400`}
-          onClick={() => setSelectedFilter(filter)}
-        >
-          {filter === "all" ? "All" : filter.replace(/-/g, " ").toUpperCase()}
-        </button>
-      ))}
-    </div>
-  );
-};
+const DateFilters = ({ selectedFilter, setSelectedFilter, disabled }) => (
+  <div className="chips" role="group" aria-label="Release date">
+    {FILTERS.map((filter) => (
+      <button
+        key={filter.id}
+        type="button"
+        className={`chip ${selectedFilter === filter.id ? "chip-active" : ""}`}
+        aria-pressed={selectedFilter === filter.id}
+        disabled={disabled}
+        onClick={() => setSelectedFilter(filter.id)}
+      >
+        {filter.label}
+      </button>
+    ))}
+  </div>
+);
 
 export default DateFilters;

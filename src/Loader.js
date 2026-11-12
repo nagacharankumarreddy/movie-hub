@@ -1,11 +1,19 @@
 import React from "react";
 
-const Loader = () => {
-  return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="w-16 h-16 border-4 border-t-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
-    </div>
-  );
-};
+// Placeholder cards shown while movies load, so the page doesn't jump.
+const Loader = () => (
+  <div className="grid" aria-hidden="true">
+    {Array.from({ length: 8 }, (_, i) => (
+      <div key={i} className="card skeleton">
+        <div className="poster-wrap" />
+        <div className="card-body">
+          <span className="bone bone-short" />
+          <span className="bone" />
+          <span className="bone bone-mid" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 export default Loader;
